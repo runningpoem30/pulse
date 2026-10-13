@@ -65,20 +65,19 @@ ONDC Pulse’s functionality can be grouped into several core components. Each i
   - *Inputs/Outputs:* Input is the sequence of canonical events for an order. Output is updated order state and possibly immediate detection of an inconsistency.  
   - *Data Model:* Table `orders` with columns: `order_id, current_state, last_event_time, last_event_type`. A state-transition definition (in code or config) defines valid moves.  
   - *Mermaid Example:*  
-    ```mermaid
-    stateDiagram-v2
-      [*] --> SEARCHED
-      SEARCHED --> SELECTED
-      SELECTED --> INITIATED
-      INITIATED --> CONFIRMED
-      CONFIRMED --> ASSIGNED
-      ASSIGNED --> PICKED_UP
-      PICKED_UP --> OUT_FOR_DELIVERY
-      OUT_FOR_DELIVERY --> DELIVERED
-      CONFIRMED --> CANCELLED
-      SEARCHED --> CANCELLED
-      /* etc. */
-    ```  
+```mermaid
+stateDiagram-v2
+    [*] --> SEARCHED
+    SEARCHED --> SELECTED
+    SELECTED --> INITIATED
+    INITIATED --> CONFIRMED
+    CONFIRMED --> ASSIGNED
+    ASSIGNED --> PICKED_UP
+    PICKED_UP --> OUT_FOR_DELIVERY
+    OUT_FOR_DELIVERY --> DELIVERED
+    CONFIRMED --> CANCELLED
+    SEARCHED --> CANCELLED
+```
   - *Deterministic vs AI:* Entirely rule-based. No AI here. The code looks up the current state and the new event; if the transition is not allowed, it flags it.  
   - *Failure Modes Detected:* Out-of-order events (e.g. receiving *DELIVERED* before *PICKED_UP*), missing mandatory events (e.g. skipping *CONFIRMED*), duplicate events. These trigger incidents.  
   - *UI/UX:* The order timeline UI will highlight invalid transitions (e.g. show a red “❌” if a state is missing) or duplicates. The state machine logic feeds the SLA checks below.  
@@ -154,7 +153,7 @@ flowchart LR
     Processor --> MetricsEng[Lambda: Metrics Engine]
     MetricsEng --> Timestream[(Amazon Timestream)]
     IncidentEng --> Incidents[(Incidents Table)]
-    Aurora --> Dashboard[Next.js UI (on CloudFront)]
+    Aurora --> Dashboard[Next.js UI on CloudFront]
     Dashboard --> Bedrock[Lambda → Amazon Bedrock]
     Bedrock --> Dashboard
     SNS[(SNS / Email Alerts)] --> Users{Ops Team Emails}

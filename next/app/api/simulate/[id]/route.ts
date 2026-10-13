@@ -16,34 +16,33 @@ export async function GET(
     });
 
     // Check if an incident was generated for this order
-    const order = await prisma.order.findUnique({
-      where: {
-        // We know it's environment 'PROD' and this tenant for now
-        // A better query would just look up order by transactionId
-        tenantId_environment_transactionId: {
-          // This assumes tenantId is seeded and known, or we search across tenants
-          // To simplify we just search by transactionId without unique constraints:
-          tenantId: events[0]?.tenantId || 'dummy',
-          environment: 'PROD',
-          transactionId
-        }
-      }
-    });
-
     let incidents: any[] = [];
-    if (order) {
-      incidents = await prisma.incident.findMany({
-        where: { orderId: order.id }
+    
+    if (events.length > 0) {
+      const order = await prisma.order.findUnique({
+        where: {
+          tenantId_environment_transactionId: {
+            tenantId: events[0].tenantId,
+            environment: 'PROD',
+            transactionId
+          }
+        }
       });
-    } else {
-      // Fallback search by looking up order differently if first query fails
-      const fallbackOrder = await prisma.order.findFirst({
-        where: { transactionId }
-      });
-      if (fallbackOrder) {
+
+      if (order) {
         incidents = await prisma.incident.findMany({
-          where: { orderId: fallbackOrder.id }
+          where: { orderId: order.id }
         });
+      } else {
+        // Fallback search by looking up order differently if first query fails
+        const fallbackOrder = await prisma.order.findFirst({
+          where: { transactionId }
+        });
+        if (fallbackOrder) {
+          incidents = await prisma.incident.findMany({
+            where: { orderId: fallbackOrder.id }
+          });
+        }
       }
     }
 

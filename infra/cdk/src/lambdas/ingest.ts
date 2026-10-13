@@ -10,7 +10,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   console.log('Received event:', JSON.stringify(event, null, 2));
 
   try {
-    if (!event.body) {
+    if (!event.body) { 
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Missing request body' }),

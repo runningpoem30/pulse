@@ -67,9 +67,7 @@ export async function POST(request: NextRequest) {
       } else {
         await sqsClient.send(new SendMessageCommand({
           QueueUrl: queueUrl,
-          MessageBody: JSON.stringify(evt),
-          MessageGroupId: transactionId, // If FIFO
-          MessageDeduplicationId: evt.messageId
+          MessageBody: JSON.stringify(evt)
         }));
       }
     }
